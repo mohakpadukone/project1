@@ -1,35 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Our simple HTTP server</title>
+  <title>Project1</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
-  
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+  
 
     const handleResponse = (xhr, parseResponse) => {
+      const userName = nameForm.querySelector('#nameField').value;
       const content = document.querySelector('#content');
+      const tasks = document.querySelector('#tasks');
       var Message = "";
+      var taskData = "";
+      var i = 0;
         
       if (parseResponse) {
-          //if set to application/json === true if text/xml === false
           const obj = JSON.parse(xhr.response);
-          console.dir(obj);
           if (obj.message) {
-            Message = `Message: ${obj.message}`;
+            Message = `Message: ${obj.message}`;            
           } else {
             Message = `${JSON.stringify(obj.users)}`;
+            taskData = obj.users[userName].task;
           }
-        } else {
-          //head
-          console.log("recieved");
+      } else {
+//          //head
+//          console.log("recieved");
+    
         }
 
       switch(xhr.status) {
         case 200:
-            content.innerHTML = `<b>Success</b>`;
+            content.innerHTML = `<b>Your Tasks</b>`;
             content.innerHTML += `<br>`;
-            content.innerHTML += `<p>${Message}</p>`;
+            for(i = 0; i < taskData.length; i++){
+                
+                content.innerHTML += `<ul><li>${taskData[i]}</li></ul>`;
+            }
             break;
           case 201:
             content.innerHTML = `<b>Create</b>`;
@@ -40,32 +48,12 @@
             content.innerHTML = `<b>Updated (No Content)</b>`;
             break;
           case 400:
-            content.innerHTML = `<b>Bad Request</b>`;
-            content.innerHTML += `<br>`;
-            content.innerHTML += `<p>${Message}</p>`;
-            break;
-          case 401:
-            content.innerHTML = `<b>Unauthorized</b>`;
-            content.innerHTML += `<br>`;
-            content.innerHTML += `<p>${Message}</p>`;
-            break;
-          case 403:
-            content.innerHTML = `<b>Forbidden</b>`;
+            content.innerHTML = `<b>Your need to enter you name to login!</b>`;
             content.innerHTML += `<br>`;
             content.innerHTML += `<p>${Message}</p>`;
             break;
           case 404:
             content.innerHTML = `<b>Resource Not Found</b>`;
-            content.innerHTML += `<br>`;
-            content.innerHTML += `<p>${Message}</p>`;
-            break;
-          case 500:
-            content.innerHTML = `<b>Internal Server Error</b>`;
-            content.innerHTML += `<br>`;
-            content.innerHTML += `<p>${Message}</p>`;
-            break;
-          case 501:
-            content.innerHTML = `<b>Not Implemented</b>`;
             content.innerHTML += `<br>`;
             content.innerHTML += `<p>${Message}</p>`;
             break;
@@ -87,8 +75,10 @@
 
     const requestUpdate = (e, userForm) => {
         //grab url field
-        const url = userForm.querySelector("#urlField").value;
-        const method = userForm.querySelector("#methodSelect").value;
+        const url = '/getUsers'; 
+        //userForm.querySelector("#urlField").value;
+        const method = 'get';
+              //userForm.querySelector("#methodSelect").value;
 
         const xhr = new XMLHttpRequest();
         xhr.open(method, url);
@@ -117,7 +107,7 @@
       
       //grab the form's name and age fields so we can check user input
       const nameField = nameForm.querySelector('#nameField');
-      const ageField = nameForm.querySelector('#ageField');
+      const taskField = nameForm.querySelector('#taskField');
       
       //create a new Ajax request (remember this is asynchronous)
       const xhr = new XMLHttpRequest();
@@ -154,6 +144,8 @@
       return false;
     };
 
+    
+
 
     const init = () => {
       const nameForm = document.querySelector("#nameForm");
@@ -170,38 +162,35 @@
         const getUsers = e => requestUpdate(e, userForm);
 
         //add event listener
-        userForm.addEventListener("submit", getUsers);
-    
+        nameForm.addEventListener("submit", getUsers);
+        
+        const ClearFields = ()=> {
+
+     document.querySelector('taskField').value = '';
+    };
+        
     };
     
     window.onload = init;
-
+    
   </script>
 </head>
 <body>
 <div class="Card">
   <section id="top">
-      <h3>Welcome to daily tasks</h3>
+      <h1>Daily tasks</h1>
       <form id="nameForm" action="/addUser" method="post">
-        <label for="name">Name: </label>
+        <label for="name">Please enter your name</label>
         <input id="nameField" type="text" name="name" />
-        <label for="task">Task: </label>
-        <input id="taskField" type="text" name="name" />
-        <input type="submit" value="Add Task" />
+        <br>
+        <input id="taskField" type="text" name="task" placeholder="Enter task to complete...."/>
+        <input id="add" type="submit" value="Add Task" onmouseout="document.querySelector('#taskField').value = ''"/>
       </form>
-      <form id="userForm" action="/getUsers" method="get">
-        <select id="urlField">
-          <option value="/getUsers">/getUsers</option>
-          <option value="/notReal">/notReal</option>
-        </select>
-        <select id="methodSelect">
-          <option value="get">GET</option>
-          <option value="head">HEAD</option>
-        </select>
-        <input type="submit" value="Get User" />
-      </form>
+      <section id="content">
+          <ul id="tasks"></ul>
+      </section>
     </section>
-    <section id="content"></section>
+    
 </div>
 </body>
 </html>
