@@ -47,7 +47,7 @@ const getUsersMeta = (request, response) => {
 };
 
 
-// function to add a user from a POST body
+// function to add a user and Task from a POST body
 const addUser = (request, response, body) => {
   // default json message
   const responseJSON = {
@@ -66,16 +66,18 @@ const addUser = (request, response, body) => {
   // if that user's name already exists in our object
   // then switch to a 204 updated status
   if (users[body.name]) {
-    users[body.name].task = body.task;
+    users[body.name].task.push(body.task);
     responseCode = 204;
   } else {
     // otherwise create an object with that name
     users[body.name] = {};
+      
+    // add or update fields for this user name
+    users[body.name].name = body.name;
+    users[body.name].task = [body.task];
   }
 
-  // add or update fields for this user name
-  users[body.name].name = body.name;
-  users[body.name].task = body.task;
+  
 
   // if response is created, then set our created message
   // and sent response with a message
